@@ -1,0 +1,7 @@
+{
+  "name": "animal-comic",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Daily animal facts generator for animal comic",
+  "main": "comic.js"
+}
