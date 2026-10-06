@@ -438,8 +438,8 @@ function drawHeader(fact) {
   heart(W / 2 + tw / 2 + 50, HEADER / 2 + 10, 7, "#ff9fb5");
 }
 
-function drawFooter(fact) {
-  const fy = HEADER + P * 2 + GAP + 18, fh = FOOTER - 34;
+function drawFactBox(fact, fy) {
+  const fh = FOOTER - 34;
   ctx.strokeStyle = OUT;
   ctx.lineWidth = 3;
   const box = roughRect(GAP, fy, W - GAP * 2, fh, 14, 1);
@@ -469,11 +469,12 @@ function drawFooter(fact) {
 function renderContent() {
   const fact = current.fact;
   drawHeader(fact);
+  drawFactBox(fact, HEADER + 12);
+  const panelsStartY = HEADER + FOOTER + 18;
   fact.panels.forEach((p, i) => {
     const col = i % 2, row = Math.floor(i / 2);
-    drawPanel(p, fact, GAP + col * (P + GAP), HEADER + row * (P + GAP), i);
+    drawPanel(p, fact, GAP + col * (P + GAP), panelsStartY + row * (P + GAP), i);
   });
-  drawFooter(fact);
 }
 
 function render() {
@@ -504,7 +505,8 @@ const mixRect = (a, b, k) => ({
 
 function panelViewRect(i) {
   const col = i % 2, row = Math.floor(i / 2);
-  return { x: GAP + col * (P + GAP) - 10, y: HEADER + row * (P + GAP) - 10, w: P + 20, h: P + 20 };
+  const panelsStartY = HEADER + FOOTER + 18;
+  return { x: GAP + col * (P + GAP) - 10, y: panelsStartY + row * (P + GAP) - 10, w: P + 20, h: P + 20 };
 }
 const FULL_RECT = { x: 0, y: 0, w: W, h: H };
 
@@ -637,7 +639,8 @@ function drawFrame(ms) {
           ? mixRect(target, { x: target.x - target.w * 0.015, y: target.y - target.h * 0.015, w: target.w * 1.03, h: target.h * 1.03 }, Math.min(1, (lt - 0.55) / (seg.t - 0.55)))
           : mixRect(FULL_RECT, target, k);
         applyView(rect);
-        drawPanel(current.fact.panels[seg.view], current.fact, GAP + (seg.view % 2) * (P + GAP), HEADER + Math.floor(seg.view / 2) * (P + GAP), seg.view);
+        const panelsStartY = HEADER + FOOTER + 18;
+        drawPanel(current.fact.panels[seg.view], current.fact, GAP + (seg.view % 2) * (P + GAP), panelsStartY + Math.floor(seg.view / 2) * (P + GAP), seg.view);
       } else {
         // 全页：开场从放大 6% 收缩到 1，结尾缓慢放大 2%
         const k = easeInOut(clamp(lt / seg.t, 0, 1));
