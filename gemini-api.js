@@ -18,12 +18,6 @@ const ANIMALS_100 = [
   "狼", "豺", "豹", "猎豹", "美洲豹", "山狮", "鬣狗", "狞猫", "猞猁", "土狼"
 ];
 
-// 场景列表
-const SCENES = ["sea", "grass", "forest", "snow", "lake", "room", "savanna", "sunny", "rain", "night"];
-
-// 表情列表
-const EXPRESSIONS = ["normal", "happy", "sad", "angry", "surprised"];
-
 // ===== 工具函数 =====
 
 function randomFrom(arr) {
@@ -44,7 +38,7 @@ function validateFact(fact) {
   return true;
 }
 
-// ===== 主函数：从 Gemini 一次获取多个知识 =====
+// ===== 主函数：从 Gemini 一次获取多个知识（带重试机制） =====
 async function getMultipleFactsFromGemini(count = 5) {
   const selectedAnimals = [];
   for (let i = 0; i < count; i++) {
@@ -90,125 +84,130 @@ async function getMultipleFactsFromGemini(count = 5) {
 
 重要：只返回 JSON 数组，不要有其他文本。`;
 
-  try {
-    const response = await fetch(GEMINI_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-goog-api-key": GEMINI_API_KEY,
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt,
-              },
-            ],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.8,
-          maxOutputTokens: 8000,
-          topP: 0.95,
-          topK: 40,
-        },
-        safetySettings: [
-          {
-            category: "HARM_CATEGORY_HARASSMENT",
-            threshold: "BLOCK_NONE",
-          },
-          {
-            category: "HARM_CATEGORY_HATE_SPEECH",
-            threshold: "BLOCK_NONE",
-          },
-          {
-            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-            threshold: "BLOCK_NONE",
-          },
-          {
-            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-            threshold: "BLOCK_NONE",
-          },
-        ],
-      }),
-    });
+  // 重试配置：最多重试 3 次，指数退避
+  const maxRetries = 3;
+  let lastError;
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`Gemini API 错误: ${error.error?.message || response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-      throw new Error("API 返回格式异常");
-    }
-
-    const responseText = data.candidates[0].content.parts[0].text;
-
-    const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      console.error("原始响应:", responseText);
-      throw new Error("无法从 API 响应中解析 JSON 数组");
-    }
-
-    const facts = JSON.parse(jsonMatch[0]);
-
-    if (!Array.isArray(facts)) {
-      throw new Error("API 返回不是数组格式");
-    }
-
-    const validFacts = [];
-    for (const fact of facts) {
-      if (validateFact(fact)) {
-        validFacts.push(fact);
-        console.log(`✅ 成功获取: ${fact.animal}`);
-      } else {
-        console.warn(`⚠️  验证失败: ${fact.animal || '未知动物'}`);
-      }
-    }
-
-    if (validFacts.length === 0) {
-      throw new Error("没有通过验证的知识");
-    }
-
-    return validFacts;
-  } catch (error) {
-    console.error("❌ 获取知识失败:", error.message);
-    throw error;
-  }
-}
-
-// ===== 批量生成函数 =====
-async function generateWeeklyFacts(count = 5) {
-  console.log(`🚀 开始生成 ${count} 个新知识...`);
-
-  const newFacts = [];
-  const errors = [];
-
-  for (let i = 0; i < count; i++) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`⏳ 生成第 ${i + 1}/${count} 个...`);
-      const fact = await getNewFactFromGemini();
-      newFacts.push(fact);
+      console.log(`   尝试 ${attempt}/${maxRetries}...`);
 
-      if (i < count - 1) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch(GEMINI_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-goog-api-key": GEMINI_API_KEY,
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt,
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.8,
+            maxOutputTokens: 8000,
+            topP: 0.95,
+            topK: 40,
+          },
+          safetySettings: [
+            {
+              category: "HARM_CATEGORY_HARASSMENT",
+              threshold: "BLOCK_NONE",
+            },
+            {
+              category: "HARM_CATEGORY_HATE_SPEECH",
+              threshold: "BLOCK_NONE",
+            },
+            {
+              category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+              threshold: "BLOCK_NONE",
+            },
+            {
+              category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+              threshold: "BLOCK_NONE",
+            },
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        const errorMsg = error.error?.message || response.statusText;
+
+        // 检查是否是高负载错误（可以重试）
+        if (errorMsg.includes("high demand") || response.status === 503) {
+          lastError = new Error(`API 高负载 (503): ${errorMsg}`);
+
+          if (attempt < maxRetries) {
+            const waitTime = Math.pow(2, attempt) * 1000;
+            console.log(`   ⏳ 等待 ${waitTime / 1000} 秒后重试...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+            continue;
+          }
+        } else {
+          // 非高负载错误，直接抛出
+          throw new Error(`Gemini API 错误: ${errorMsg}`);
+        }
       }
+
+      const data = await response.json();
+
+      if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+        throw new Error("API 返回格式异常");
+      }
+
+      const responseText = data.candidates[0].content.parts[0].text;
+
+      const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+      if (!jsonMatch) {
+        console.error("原始响应:", responseText);
+        throw new Error("无法从 API 响应中解析 JSON 数组");
+      }
+
+      const facts = JSON.parse(jsonMatch[0]);
+
+      if (!Array.isArray(facts)) {
+        throw new Error("API 返回不是数组格式");
+      }
+
+      const validFacts = [];
+      for (const fact of facts) {
+        if (validateFact(fact)) {
+          validFacts.push(fact);
+          console.log(`   ✅ ${fact.animal}`);
+        } else {
+          console.warn(`   ⚠️  验证失败: ${fact.animal || '未知动物'}`);
+        }
+      }
+
+      if (validFacts.length === 0) {
+        throw new Error("没有通过验证的知识");
+      }
+
+      return validFacts;
+
     } catch (error) {
-      errors.push(`第 ${i + 1} 个: ${error.message}`);
+      lastError = error;
+
+      if (attempt < maxRetries && error.message.includes("高负载")) {
+        continue;
+      }
+
+      // 最后一次尝试或非重试错误
+      if (attempt === maxRetries) {
+        console.error(`❌ 获取知识失败: ${error.message}`);
+        throw error;
+      }
     }
   }
 
-  console.log(`\n✅ 生成完成！`);
-  console.log(`   成功: ${newFacts.length} 个`);
-  if (errors.length > 0) {
-    console.log(`   失败: ${errors.length} 个`);
-    errors.forEach(e => console.log(`     - ${e}`));
-  }
-
-  return newFacts;
+  // 不应该到达这里
+  throw lastError || new Error("未知错误");
 }
 
 // ===== 导出函数 =====
