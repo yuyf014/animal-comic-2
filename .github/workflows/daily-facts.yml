@@ -2,7 +2,7 @@ name: Daily Animal Facts Update
 
 on:
   schedule:
-    - cron: '48 9 * * *'
+    - cron: '28 18 * * *'
   workflow_dispatch:
 
 permissions:
