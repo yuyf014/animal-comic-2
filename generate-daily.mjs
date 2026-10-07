@@ -1,6 +1,6 @@
 // generate-daily.mjs - 每天生成 5 个新的动物小知识
 
-import { getNewFactFromGemini } from './gemini-api.js';
+import { getMultipleFactsFromGemini } from './gemini-api.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -11,25 +11,10 @@ async function generateDailyFacts() {
   console.log(`\n🚀 开始生成今日动物小知识...`);
   console.log(`⏰ 时间: ${new Date().toLocaleString('zh-CN')}\n`);
 
-  const newFacts = [];
-  const errors = [];
-
   try {
-    // 每天生成 5 个新知识
-    for (let i = 0; i < 5; i++) {
-      try {
-        console.log(`⏳ 生成第 ${i + 1}/5 个...`);
-        const fact = await getNewFactFromGemini();
-        newFacts.push(fact);
-
-        // 避免频繁调用 API，加入延迟
-        if (i < 4) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      } catch (error) {
-        errors.push(`第 ${i + 1} 个: ${error.message}`);
-      }
-    }
+    // 一次 API 调用获取 5 个新知识
+    console.log(`⏳ 调用 Gemini API 获取 5 个新知识...`);
+    const newFacts = await getMultipleFactsFromGemini(5);
 
     if (newFacts.length === 0) {
       console.log("❌ 生成失败：没有获取到任何知识");
@@ -62,11 +47,7 @@ ${allFacts.map(f => JSON.stringify(f)).join(',\n')}
 
     console.log(`\n✅ 成功生成！\n`);
     console.log(`📊 数据统计：`);
-    console.log(`   成功: ${newFacts.length} 个`);
-    if (errors.length > 0) {
-      console.log(`   失败: ${errors.length} 个`);
-      errors.forEach(e => console.log(`     - ${e}`));
-    }
+    console.log(`   新增: ${newFacts.length} 个`);
     console.log(`   库存: ${allFacts.length} 个知识`);
     console.log(`\n🎯 今日生成的动物：`);
     newFacts.forEach((fact, i) => {

@@ -44,55 +44,51 @@ function validateFact(fact) {
   return true;
 }
 
-// ===== 主函数：从 Gemini 获取新知识 =====
-async function getNewFactFromGemini() {
-  const animalName = randomFrom(ANIMALS_100);
+// ===== 主函数：从 Gemini 一次获取多个知识 =====
+async function getMultipleFactsFromGemini(count = 5) {
+  const selectedAnimals = [];
+  for (let i = 0; i < count; i++) {
+    let animal;
+    do {
+      animal = randomFrom(ANIMALS_100);
+    } while (selectedAnimals.includes(animal));
+    selectedAnimals.push(animal);
+  }
+
+  const animalsList = selectedAnimals.join("、");
 
   const prompt = `你是一个儿童教育专家和漫画编剧。
 
-任务：为名叫"${animalName}"的动物创建一个有趣的4格漫画故事，包含关于这个动物的小知识。
+任务：为以下${count}种动物各创建一个有趣的4格漫画故事，包含关于该动物的小知识。
+动物列表：${animalsList}
 
 要求：
-1. 知识（fact）：关于${animalName}的一个有趣、真实的小知识，100-150字左右
-2. 4个漫画面板，每个面板包含：
+1. 每个动物一个知识：关于该动物的一个有趣、真实的小知识，100-150字左右
+2. 每个动物4个漫画面板，每个面板包含：
    - scene：场景（可选值：sea, grass, forest, snow, lake, room, savanna, sunny, rain, night）
    - cast：角色数组，格式为 ["角色名 表情"]，表情可以是 normal, happy, sad, angry, surprised
    - text：该格的对话或描述（20-50字）
    - caption：可选的标题或旁白
 
-返回格式（严格遵循）：
-{
-  "animal": "${animalName}",
-  "fact": "小知识内容",
-  "panels": [
-    {
-      "scene": "场景名",
-      "cast": ["${animalName.toLowerCase()} happy"],
-      "text": "第一格的对话",
-      "caption": "标题"
-    },
-    {
-      "scene": "场景名",
-      "cast": ["${animalName.toLowerCase()} normal"],
-      "text": "第二格的对话",
-      "caption": ""
-    },
-    {
-      "scene": "场景名",
-      "cast": ["${animalName.toLowerCase()} surprised"],
-      "text": "第三格的对话",
-      "caption": ""
-    },
-    {
-      "scene": "场景名",
-      "cast": ["${animalName.toLowerCase()} happy"],
-      "text": "第四格的对话",
-      "caption": ""
-    }
-  ]
-}
+返回格式（严格遵循，返回一个 JSON 数组）：
+[
+  {
+    "animal": "动物名1",
+    "fact": "小知识内容",
+    "panels": [
+      {
+        "scene": "场景名",
+        "cast": ["角色 表情"],
+        "text": "第一格的对话",
+        "caption": "标题"
+      },
+      ...共4个面板
+    ]
+  },
+  ...共${count}个动物
+]
 
-重要：只返回 JSON，不要有其他文本。`;
+重要：只返回 JSON 数组，不要有其他文本。`;
 
   try {
     const response = await fetch(GEMINI_API_URL, {
@@ -113,7 +109,7 @@ async function getNewFactFromGemini() {
         ],
         generationConfig: {
           temperature: 0.8,
-          maxOutputTokens: 1500,
+          maxOutputTokens: 8000,
           topP: 0.95,
           topK: 40,
         },
@@ -151,21 +147,33 @@ async function getNewFactFromGemini() {
 
     const responseText = data.candidates[0].content.parts[0].text;
 
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    const jsonMatch = responseText.match(/\[[\s\S]*\]/);
     if (!jsonMatch) {
       console.error("原始响应:", responseText);
-      throw new Error("无法从 API 响应中解析 JSON");
+      throw new Error("无法从 API 响应中解析 JSON 数组");
     }
 
-    const fact = JSON.parse(jsonMatch[0]);
+    const facts = JSON.parse(jsonMatch[0]);
 
-    if (!validateFact(fact)) {
-      console.error("验证失败的知识:", fact);
-      throw new Error("返回的知识格式不符合要求");
+    if (!Array.isArray(facts)) {
+      throw new Error("API 返回不是数组格式");
     }
 
-    console.log(`✅ 成功获取: ${fact.animal}`);
-    return fact;
+    const validFacts = [];
+    for (const fact of facts) {
+      if (validateFact(fact)) {
+        validFacts.push(fact);
+        console.log(`✅ 成功获取: ${fact.animal}`);
+      } else {
+        console.warn(`⚠️  验证失败: ${fact.animal || '未知动物'}`);
+      }
+    }
+
+    if (validFacts.length === 0) {
+      throw new Error("没有通过验证的知识");
+    }
+
+    return validFacts;
   } catch (error) {
     console.error("❌ 获取知识失败:", error.message);
     throw error;
@@ -205,7 +213,6 @@ async function generateWeeklyFacts(count = 5) {
 
 // ===== 导出函数 =====
 export {
-  getNewFactFromGemini,
-  generateWeeklyFacts,
+  getMultipleFactsFromGemini,
   ANIMALS_100,
 };
