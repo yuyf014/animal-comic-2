@@ -545,7 +545,9 @@ const COVER_CHAR = {
   大象: "elephant", 斑马: "zebra", 蜗牛: "snail", 鲨鱼: "shark", 螃蟹: "crab",
   狮子: "lion", 老虎: "tiger", 熊猫: "panda", 长颈鹿: "giraffe", 猴子: "monkey",
   鹦鹉: "parrot", 海豚: "dolphin", 鲸鱼: "whale", 熊: "bear", 狐狸: "fox",
-  兔子: "rabbit", 金鱼: "fish"
+  兔子: "rabbit", 金鱼: "fish",
+  // 辅助角色映射
+  牛虻: "crow", 花猫: "person", 金鱼泡泡: "fish",
 };
 
 function drawCover(lt) {
