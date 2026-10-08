@@ -722,7 +722,6 @@ document.getElementById("download").addEventListener("click", () => {
   const a = document.createElement("a");
   a.download = `动物漫画-${current.fact.animal}.png`;
   a.href = canvas.toDataURL("image/png");
-  a.click();
 });
 
 show();
