@@ -55,7 +55,10 @@
   <script type="module">
     import { FACTS } from './facts.js';
     window.FACTS = FACTS;
+    // Load comic.js after FACTS is available
+    const script = document.createElement('script');
+    script.src = 'comic.js';
+    document.body.appendChild(script);
   </script>
-  <script src="comic.js"></script>
 </body>
 </html>
