@@ -292,12 +292,30 @@ function drawCaption(text, x, y) {
   ctx.fillText(text, x + 23, y + 29);
 }
 
+// 中文动物名称转英文名称映射
+const ANIMAL_MAP = {
+  章鱼: "octopus", 海獭: "otter", 树懒: "sloth", 奶牛: "cow", 企鹅: "penguin",
+  火烈鸟: "flamingo", 蜂鸟: "hummingbird", 鹰: "eagle", 乌鸦: "crow", 考拉: "koala",
+  大象: "elephant", 斑马: "zebra", 蜗牛: "snail", 鲨鱼: "shark", 螃蟹: "crab",
+  狮子: "lion", 老虎: "tiger", 熊猫: "panda", 长颈鹿: "giraffe", 猴子: "monkey",
+  鹦鹉: "parrot", 海豚: "dolphin", 鲸鱼: "whale", 熊: "bear", 狐狸: "fox",
+  兔子: "rabbit", 金鱼: "fish",
+  // 带"小"的版本
+  小章鱼: "octopus", 小海獭: "otter", 小树懒: "sloth", 小奶牛: "cow", 小企鹅: "penguin",
+  小火烈鸟: "flamingo", 小蜂鸟: "hummingbird", 小鹰: "eagle", 小乌鸦: "crow", 小考拉: "koala",
+  小大象: "elephant", 小斑马: "zebra", 小蜗牛: "snail", 小鲨鱼: "shark", 小螃蟹: "crab",
+  小狮子: "lion", 小老虎: "tiger", 小熊猫: "panda", 小长颈鹿: "giraffe", 小猴子: "monkey",
+  小鹦鹉: "parrot", 小海豚: "dolphin", 小鲸鱼: "whale", 小熊: "bear", 小狐狸: "fox",
+  小兔子: "rabbit", 小金鱼: "fish",
+};
+
 // ---------- 格子 ----------
 // 字符串写法："角色 表情 特效..." 或 "道具 参数"；也可以直接写对象 {c, e, color, fx}
 function parseItem(it) {
   if (typeof it === "object") return { e: "normal", ...it, fx: it.fx || [] };
   const [name, ...rest] = it.split(" ");
-  if (CHARS[name]) return { c: name, e: rest[0] || "normal", fx: rest.slice(1) };
+  const engName = ANIMAL_MAP[name] || name;
+  if (CHARS[engName]) return { c: engName, e: rest[0] || "normal", fx: rest.slice(1) };
   return { prop: name, args: rest };
 }
 
@@ -520,8 +538,11 @@ function applyView(rect) {
 // ---------- 视频封面 ----------
 const COVER_CHAR = {
   章鱼: "octopus", 海獭: "otter", 树懒: "sloth", 奶牛: "cow", 企鹅: "penguin",
-  火烈鸟: "flamingo", 蜂鸟: "hummingbird", 乌鸦: "crow", 考拉: "koala",
-  大象: "elephant", 斑马: "zebra", 蜗牛: "snail",
+  火烈鸟: "flamingo", 蜂鸟: "hummingbird", 鹰: "eagle", 乌鸦: "crow", 考拉: "koala",
+  大象: "elephant", 斑马: "zebra", 蜗牛: "snail", 鲨鱼: "shark", 螃蟹: "crab",
+  狮子: "lion", 老虎: "tiger", 熊猫: "panda", 长颈鹿: "giraffe", 猴子: "monkey",
+  鹦鹉: "parrot", 海豚: "dolphin", 鲸鱼: "whale", 熊: "bear", 狐狸: "fox",
+  兔子: "rabbit", 金鱼: "fish"
 };
 
 function drawCover(lt) {
