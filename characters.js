@@ -607,6 +607,182 @@ def("crab", -48, o => {
   face({ ey: -41, my: -16, gap: 8, r: 3.6, expr: o.expr, ring: true });
 });
 
+def("lion", -88, o => {
+  const col = o.color || "#d4a574", mane = "#c89050";
+  blob(0, -24, 22, 21, col);
+  for (let a = 0; a < Math.PI * 2; a += Math.PI / 5) {
+    blob(Math.cos(a) * 36, -58 + Math.sin(a) * 36, 12, 12, mane);
+  }
+  blob(-14, -82, 5, 7, col, { rot: -0.3 });
+  blob(14, -82, 5, 7, col, { rot: 0.3 });
+  blob(0, -70, 24, 20, col);
+  face({ ey: -64, my: -44, gap: 12, r: 5, expr: o.expr });
+});
+
+def("tiger", -90, o => {
+  const col = o.color || "#ffb347", stripe = "#4a3f3f";
+  blob(-10, -4, 6, 5, stripe);
+  blob(10, -4, 6, 5, stripe);
+  const body = blob(0, -24, 22, 21, col);
+  inside(body, () => {
+    ctx.lineWidth = 3;
+    [-12, 0, 12].forEach(sx => curve([[sx, -46], [sx + 2, -28], [sx, -4]]));
+  });
+  blob(-14, -82, 5, 10, col, { rot: -0.3 });
+  blob(14, -82, 5, 10, col, { rot: 0.3 });
+  blob(0, -65, 22, 20, col);
+  shape([[-18, -75], [-14, -85], [-6, -82]], stripe);
+  shape([[18, -75], [14, -85], [6, -82]], stripe);
+  face({ ey: -62, my: -39, gap: 12, r: 5, expr: o.expr });
+});
+
+def("panda", -88, o => {
+  const col = o.color || "#ffffff", black = "#3a2828";
+  blob(-11, -4, 6, 5, black);
+  blob(11, -4, 6, 5, black);
+  blob(0, -24, 22, 21, col);
+  blob(-16, -72, 9, 10, black);
+  blob(16, -72, 9, 10, black);
+  blob(0, -65, 24, 20, col);
+  blob(0, -48, 13, 10, "#f0f0f0");
+  ctx.fillStyle = black;
+  oval(-6, -65, 3.5, 5);
+  ctx.fill();
+  oval(6, -65, 3.5, 5);
+  ctx.fill();
+  face({ ey: -62, my: -42, gap: 10, r: 4.5, expr: o.expr });
+});
+
+def("giraffe", -102, o => {
+  const col = o.color || "#f4d4a8", spot = "#8b7355";
+  tubes([[[0, -20], [1, -40], [2, -60], [3, -80]]], col, 12);
+  blob(0, -28, 20, 18, col);
+  inside(blob(0, -28, 20, 18, col), () => {
+    [-8, 4].forEach(sx => blob(sx, -30, 8, 6, spot, { stroke: false }));
+  });
+  blob(-10, -90, 6, 8, col, { rot: -0.2 });
+  blob(10, -90, 6, 8, col, { rot: 0.2 });
+  blob(0, -92, 10, 6, col);
+  face({ ey: -100, gap: 7, r: 4, expr: o.expr });
+});
+
+def("monkey", -85, o => {
+  const col = o.color || "#b8956d", skin = "#f4d4a8";
+  blob(-11, -4, 6, 5, col);
+  blob(11, -4, 6, 5, col);
+  blob(-25, -30, 8, 15, col, { rot: 0.3 });
+  blob(25, -30, 8, 15, col, { rot: -0.3 });
+  blob(0, -26, 22, 24, col);
+  blob(0, -58, 24, 21, col);
+  blob(0, -48, 15, 12, skin);
+  blob(0, -56, 8, 6, skin, { stroke: false });
+  ctx.fillStyle = OUT;
+  oval(-6, -50, 2.5, 2);
+  ctx.fill();
+  oval(6, -50, 2.5, 2);
+  ctx.fill();
+  face({ ey: -60, my: -42, gap: 11, r: 4.5, expr: o.expr });
+});
+
+def("parrot", -82, o => {
+  const col = o.color || "#e74c3c", wing = "#27ae60";
+  blob(-8, -3, 6, 3.5, "#ffb347");
+  blob(8, -3, 6, 3.5, "#ffb347");
+  blob(-20, -25, 10, 18, wing, { rot: 0.4 });
+  blob(20, -25, 10, 18, wing, { rot: -0.4 });
+  blob(0, -28, 20, 24, col);
+  blob(0, -58, 18, 18, col);
+  blob(0, -54, 8, 5, "#f0e0a0");
+  face({ ey: -62, gap: 9, r: 4, expr: o.expr });
+  blob(0, -50, 5, 3.5, "#ffb347");
+});
+
+def("dolphin", -82, o => {
+  const col = o.color || "#5dade2";
+  blob(-12, -6, 8, 6, col);
+  blob(12, -6, 8, 6, col);
+  blob(0, -28, 26, 20, col);
+  blob(0, -22, 15, 12, "#ffffff", { stroke: false });
+  tubes([[[6, -48], [12, -60], [14, -70]]], col, 9);
+  blob(0, -56, 20, 18, col);
+  face({ x: 16, ey: -48, my: -36, gap: 8, r: 4, expr: o.expr });
+});
+
+def("whale", -95, o => {
+  const col = o.color || "#4a7c8a";
+  blob(-15, -8, 10, 7, col);
+  blob(15, -8, 10, 7, col);
+  blob(0, -32, 32, 26, col);
+  blob(0, -28, 20, 16, "#8fbdd4", { stroke: false });
+  tubes([[[2, -56], [4, -70], [6, -82]]], col, 12);
+  blob(0, -62, 26, 20, col);
+  face({ x: 18, ey: -54, my: -40, gap: 10, r: 5, expr: o.expr });
+});
+
+def("bear", -88, o => {
+  const col = o.color || "#8b6f47";
+  blob(-10, -4, 7, 5, col);
+  blob(10, -4, 7, 5, col);
+  blob(-18, -65, 9, 12, col);
+  blob(18, -65, 9, 12, col);
+  blob(0, -26, 23, 23, col);
+  blob(0, -62, 26, 22, col);
+  blob(0, -50, 14, 10, "#d4a574");
+  ctx.fillStyle = OUT;
+  oval(-6, -58, 3, 4);
+  ctx.fill();
+  oval(6, -58, 3, 4);
+  ctx.fill();
+  face({ ey: -62, my: -44, gap: 12, r: 5, expr: o.expr });
+});
+
+def("fox", -86, o => {
+  const col = o.color || "#ff6b35", white = "#ffffff";
+  blob(-10, -3, 7, 4, col);
+  blob(10, -3, 7, 4, col);
+  blob(-28, -70, 9, 12, col);
+  blob(28, -70, 9, 12, col);
+  blob(0, -25, 22, 22, col);
+  blob(0, -50, 9, 7, white, { stroke: false });
+  blob(0, -60, 24, 20, col);
+  ctx.fillStyle = OUT;
+  oval(-5, -50, 2.5, 2);
+  ctx.fill();
+  oval(5, -50, 2.5, 2);
+  ctx.fill();
+  face({ ey: -62, my: -42, gap: 11, r: 4.5, expr: o.expr });
+});
+
+def("rabbit", -84, o => {
+  const col = o.color || "#ffe8f0", inner = "#ffccdd";
+  blob(-10, -4, 6, 5, col);
+  blob(10, -4, 6, 5, col);
+  blob(-12, -90, 4, 18, col);
+  blob(12, -90, 4, 18, col);
+  blob(-12, -90, 2.5, 14, inner, { stroke: false });
+  blob(12, -90, 2.5, 14, inner, { stroke: false });
+  blob(0, -26, 20, 22, col);
+  blob(0, -54, 22, 20, col);
+  blob(0, -50, 12, 8, inner);
+  ctx.fillStyle = OUT;
+  oval(-5, -50, 2, 2.5);
+  ctx.fill();
+  oval(5, -50, 2, 2.5);
+  ctx.fill();
+  face({ ey: -60, my: -42, gap: 10, r: 4, expr: o.expr });
+});
+
+def("fish", -60, o => {
+  const col = o.color || "#ffb347";
+  blob(-12, -5, 7, 4, col);
+  blob(12, -5, 7, 4, col);
+  blob(0, -18, 24, 16, col);
+  shape([[-32, -20], [-42, -18], [-40, -8], [-28, -10]], col);
+  blob(0, -40, 18, 16, col);
+  face({ ey: -38, gap: 8, r: 3.5, expr: o.expr });
+  blob(0, -28, 4, 2.5, col, { stroke: false });
+});
+
 // ---------- 道具 ----------
 function leafAt(x, y, len, ang, fill) {
   const c = Math.cos(ang), s = Math.sin(ang), w = len * 0.35;
