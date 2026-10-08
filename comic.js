@@ -307,6 +307,9 @@ const ANIMAL_MAP = {
   小狮子: "lion", 小老虎: "tiger", 小熊猫: "panda", 小长颈鹿: "giraffe", 小猴子: "monkey",
   小鹦鹉: "parrot", 小海豚: "dolphin", 小鲸鱼: "whale", 小熊: "bear", 小狐狸: "fox",
   小兔子: "rabbit", 小金鱼: "fish",
+  // 辅助角色映射
+  牛虻: "crow", 花猫: "person", 金鱼泡泡: "fish",
+  小牛虻: "crow", 小花猫: "person", 小金鱼泡泡: "fish",
 };
 
 // ---------- 格子 ----------
