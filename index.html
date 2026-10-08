@@ -52,7 +52,10 @@
   <canvas id="comic"></canvas>
 
   <script src="characters.js"></script>
-  <script src="facts.js"></script>
+  <script type="module">
+    import { FACTS } from './facts.js';
+    window.FACTS = FACTS;
+  </script>
   <script src="comic.js"></script>
 </body>
 </html>
