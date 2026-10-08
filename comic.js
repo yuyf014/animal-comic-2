@@ -673,7 +673,6 @@ function recordVideo() {
     const a = document.createElement("a");
     a.download = `动物漫画视频-${current.fact.animal}.webm`;
     a.href = URL.createObjectURL(new Blob(chunks, { type: "video/webm" }));
-    a.click();
     btn.textContent = old;
     btn.disabled = false;
     recording = false;
